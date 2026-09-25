@@ -156,7 +156,7 @@ fun TextInputScreen(onSend: (String) -> Unit) {
                         }
                     )
                 },
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Mic,
@@ -167,7 +167,7 @@ fun TextInputScreen(onSend: (String) -> Unit) {
             IconButton(
                 onClick = { send() },
                 enabled = text.isNotBlank(),
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
