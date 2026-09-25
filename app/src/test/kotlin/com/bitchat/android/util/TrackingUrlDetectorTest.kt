@@ -7,7 +7,10 @@ import org.junit.Test
 class TrackingUrlDetectorTest {
     @Test
     fun `detects supported tracking query parameters`() {
-        listOf("igsh", "fbclid", "gclid", "dclid", "msclkid", "twclid", "ttclid").forEach { key ->
+        listOf(
+            "igsh", "igshid", "fbclid", "gclid", "gbraid", "wbraid", "dclid",
+            "msclkid", "twclid", "ttclid", "si", "mc_cid", "mc_eid",
+        ).forEach { key ->
             assertTrue(TrackingUrlDetector.hasTrackingParameter("https://example.com/path?$key=value"))
         }
         assertTrue(TrackingUrlDetector.hasTrackingParameter("https://example.com/?utm_source=chat"))
@@ -27,7 +30,6 @@ class TrackingUrlDetectorTest {
             "https://example.com/igsh/value",
             "https://example.com/#igsh=value",
             "https://example.com/?other=igsh",
-            "https://example.com/?igshid=value",
             "https://example.com/?notutm_source=value",
             "https://example.com/?redirect=https://other.test/?igsh=value",
             "ordinary igsh text",

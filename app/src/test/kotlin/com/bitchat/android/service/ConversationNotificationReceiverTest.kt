@@ -41,4 +41,13 @@ class ConversationNotificationReceiverTest {
         assertEquals(8_000, merged.length)
         assertEquals(true, merged.endsWith(reply))
     }
+
+    @Test
+    fun `oversized reply keeps the start of its URL`() {
+        val reply = "https://example.com/?igshid=" + "x".repeat(100)
+        assertEquals(
+            reply.take(40),
+            mergeConversationDrafts("old draft", reply, maxChars = 40),
+        )
+    }
 }

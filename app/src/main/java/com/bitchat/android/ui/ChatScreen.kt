@@ -400,7 +400,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
         onSend = { submittedText ->
             if (submittedText.trim().isNotEmpty()) {
                 viewModel.sendMessage(submittedText.trim()) { accepted ->
-                    if (accepted) {
+                    if (accepted && messageText.text == submittedText) {
                         messageText = TextFieldValue("")
                         viewModel.setConversationDraft(selectedPrivatePeer, "")
                         // Clearing the field in code does not run onMessageTextChange,

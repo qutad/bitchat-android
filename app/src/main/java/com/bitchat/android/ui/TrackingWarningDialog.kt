@@ -20,12 +20,12 @@ internal fun TrackingWarningDialog(
         text = { Text(stringResource(message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.yes))
+                Text(stringResource(R.string.tracking_link_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.no))
+                Text(stringResource(R.string.tracking_link_cancel))
             }
         },
     )

@@ -8,7 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.NotificationManagerCompat
@@ -47,6 +50,7 @@ class NotificationManager(
         private const val GEOHASH_CHANNEL_ID = "bitchat_geohash_notifications"
         private const val GROUP_KEY_DM = "bitchat_dm_group"
         private const val GROUP_KEY_GEOHASH = "bitchat_geohash_group"
+        private const val TRACKING_REPLY_TAG = "tracking_reply_warning"
         private const val NOTIFICATION_REQUEST_CODE = 1000
         private const val GEOHASH_NOTIFICATION_REQUEST_CODE = 2000
         private const val SUMMARY_NOTIFICATION_ID = 999
@@ -99,15 +103,6 @@ class NotificationManager(
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
             val notificationID = conversationID.hashCode()
-            val previousGroup = runCatching {
-                val manager = context.getSystemService(
-                    Context.NOTIFICATION_SERVICE,
-                ) as AndroidNotificationManager
-                manager.activeNotifications
-                    .firstOrNull { it.id == notificationID }
-                    ?.notification
-                    ?.group
-            }.getOrNull()
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(context.getString(R.string.tracking_link_warning_title))
@@ -125,22 +120,25 @@ class NotificationManager(
                         .setContentText(context.getString(R.string.notification_content_hidden))
                         .build(),
                 )
-                .apply {
-                    val shouldGroup = synchronized(liveManagers) {
-                        liveManagers.any { it.pendingNotifications.size > 1 }
-                    }
-                    if (previousGroup != null || shouldGroup) {
-                        setGroup(previousGroup ?: GROUP_KEY_DM)
-                    }
-                }
                 .build()
 
-            if (
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            val canNotify = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
                 ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                NotificationManagerCompat.from(context).notify(notificationID, notification)
+                    PackageManager.PERMISSION_GRANTED
+            if (canNotify) {
+                try {
+                    // A separate tag preserves the MessagingStyle thread and its reply actions.
+                    NotificationManagerCompat.from(context)
+                        .notify(TRACKING_REPLY_TAG, notificationID, notification)
+                    return
+                } catch (_: SecurityException) {
+                    // Permission may have been revoked after the check.
+                }
+            }
+            // A direct reply has already been intercepted. Even without notification permission,
+            // tell the user that it was saved rather than silently appearing to have been sent.
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, R.string.tracking_link_reply_saved, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -539,6 +537,7 @@ class NotificationManager(
             notificationManager.cancel(key.hashCode())
         }
         notificationManager.cancel(conversationID.hashCode())
+        notificationManager.cancel(TRACKING_REPLY_TAG, conversationID.hashCode())
 
         // Update or remove summary notification
         if (pendingNotifications.isEmpty()) {

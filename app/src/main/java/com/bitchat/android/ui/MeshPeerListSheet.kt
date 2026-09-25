@@ -1836,8 +1836,6 @@ fun PrivateChatSheet(
 
                     // Input section. No divider here: ChatInputSection draws its own fade and
                     // hairline.
-                    val conversationDrafts by viewModel.conversationDrafts
-                        .collectAsStateWithLifecycle()
                     var messageText by remember(peerID) {
                         mutableStateOf(
                             androidx.compose.ui.text.input.TextFieldValue(
@@ -1845,18 +1843,6 @@ fun PrivateChatSheet(
                             )
                         )
                     }
-                    val persistedDraft = conversationDrafts[
-                        ContactDirectory.canonicalConversationId(peerID).lowercase()
-                    ].orEmpty()
-                    LaunchedEffect(persistedDraft) {
-                        if (persistedDraft != messageText.text) {
-                            messageText = androidx.compose.ui.text.input.TextFieldValue(
-                                text = persistedDraft,
-                                selection = androidx.compose.ui.text.TextRange(persistedDraft.length),
-                            )
-                        }
-                    }
-
                     ChatInputSection(
                         messageText = messageText,
                         onMessageTextChange = { newText ->

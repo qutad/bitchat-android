@@ -8,10 +8,16 @@ object TrackingUrlDetector {
         "dclid",
         "fbclid",
         "gclid",
+        "gbraid",
         "igsh",
+        "igshid",
+        "mc_cid",
+        "mc_eid",
         "msclkid",
+        "si",
         "ttclid",
         "twclid",
+        "wbraid",
     )
 
     private val urlPattern = Regex(
