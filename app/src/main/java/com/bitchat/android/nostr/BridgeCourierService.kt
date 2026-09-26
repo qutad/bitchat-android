@@ -136,6 +136,7 @@ class BridgeCourierService internal constructor(
             }
             val filter = NostrFilter.Builder()
                 .kinds(KIND)
+                // Builder.since accepts milliseconds and serializes seconds for Nostr relays.
                 .since(now - CourierEnvelope.MAX_LIFETIME_MS)
                 .limit(100)
                 .tag("x", *tags.toTypedArray())

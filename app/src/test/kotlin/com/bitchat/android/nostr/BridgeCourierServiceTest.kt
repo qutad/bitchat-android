@@ -18,6 +18,29 @@ class BridgeCourierServiceTest {
     private val recipientKey = ByteArray(32) { 0x32 }
 
     @Test
+    fun `subscription queries the last 24 hours in relay seconds`() {
+        val relay = FakeRelay()
+        val receiver = BridgeCourierService(
+            cipher = FakeCipher(recipientKey),
+            onEnvelope = {},
+            relayManager = relay,
+            relayUrls = relays,
+            clock = { now }
+        )
+
+        try {
+            receiver.start()
+            val filter = requireNotNull(relay.subscription).filter
+            val expectedSince = ((now - CourierEnvelope.MAX_LIFETIME_MS) / 1000).toInt()
+            assertEquals(expectedSince, filter.since)
+            assertEquals(listOf(1401), filter.kinds)
+            assertEquals(100, filter.limit)
+        } finally {
+            receiver.stop()
+        }
+    }
+
+    @Test
     fun `deposit creates a signed iOS-compatible event and receiver admits it once`() {
         val senderRelay = FakeRelay()
         val sender = BridgeCourierService(
